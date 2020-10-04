@@ -1,0 +1,6 @@
+Ya esta listo todo. Solo falta que vea como editar la imagen que tiene 
+Avances hechos en:
+
+web.php al final
+PersonalController
+view de Personal (formulario y listado)
