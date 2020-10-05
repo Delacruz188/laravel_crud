@@ -52,3 +52,8 @@ Route::match(['GET', 'POST'], '/buscador', 'BuscadorController@index');
 Route::get('/catalogos/socios/listado','SocioController@listado');
 Route::match(array('GET','POST'), '/catalogos/socios/formulario', 'SocioController@formulario');
 Route::post('/catalogos/socios/insertar', 'SocioController@save');
+
+// ruta de prueba de la plantila
+Route::get('/template_test', function() {
+    return view('app.dummy');
+});

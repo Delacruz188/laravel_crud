@@ -10,17 +10,25 @@ use App\Model\Socio;
 class SocioController extends Controller {
 
     public function listado() {
+
+        $socio_contenido = DB::table('socio')
+        // ->join('personal','servicio.idpersonal','=','personal.id_personal')
+        ->join('tiposocio','tiposocio.id_tiposocio','=','socio.id_tiposocio')
+        ->select('socio.id_socio', 'socio.nombre_socio', 'socio.foto', 'tiposocio.nombre_tiposocio')
+        ->whereRaw("socio.id_tiposocio=tiposocio.id_tiposocio")
+        
+        // where 
+        ->get();
         // un metodo parte de este controlador que sirva para pedir los datos de la base de datos del modelo
-        $socio_contenido = Socio::all();
+        // $socio_contenido = Socio::all();
         // dd($socio_contenido);
         // vamos a hacer que la vista tenga los datos para que puedan ser mostrados
         // creamos primero un arreglo donde van a estar los datos pasados (hay varias formas)
         $datos = array();
         // vamos a hacerlo un diccionario
         $datos['contenido'] = $socio_contenido;
+        // dd($datos);
         // ahora vamos a hacer que ese arreglo, tenga el nombre para que se muestre en la vista
-        $datos['usuario'] = 'Carlos';
-
         // ahora le decimos que nos devuelva una vista
         return view('Socio.listado')->with($datos);
     }
@@ -71,16 +79,28 @@ class SocioController extends Controller {
                 // primero creamos un objeto con la instancia de servicio para tener todos sus atributos
                 $socio = new Socio();
                 $socio->nombre_socio=$datos['nombre_socio'];
-                $socio->id_tiposocio=$datos['tiposocio'];
+                $socio->id_tiposocio=$datos['id_tiposocio'];
                 $socio->foto=$nombre_archivo;
                 $socio->save();
                 break;
             
             case 'Editar':
+
+                if ($r->hasFile('foto')) {
+                    $archivo = $r->file('foto');
+                    $nombre = 'foto-' . time() . '.' . $archivo->getClientOriginalExtension();
+                    $nombre_archivo = $archivo->storeAs('fotos', $nombre);
+                } else {
+                    $nombre_archivo = '';
+                }
+
                 $socio = Socio::find($datos['id_socio']);
                 $socio->nombre_socio=$datos['nombre_socio'];
-                $socio->id_tiposocio=$datos['tiposocio'];
-                $socio->foto=$nombre_archivo;
+                $socio->id_tiposocio=$datos['id_tiposocio'];
+                if ($nombre_archivo != '') {
+                    Storage::delete($socio->foto);
+                    $socio->foto = $nombre_archivo;
+                }
                 $socio->save();
                 break;
 

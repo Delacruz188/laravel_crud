@@ -3,20 +3,36 @@ namespace App\Http\Controllers;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 use App\Model\Servicio;
+use App\Model\Tiposervicio;
+
 
 class ServicioController extends Controller {
 
     public function listado() {
+
+        $registros = DB::table('servicio')
+        // ->join('personal','servicio.idpersonal','=','personal.id_personal')
+        ->join('tiposervicio','tiposervicio.idtiposervicio','=','servicio.idtiposervicio')
+        ->join('personal','personal.id_personal','=','servicio.idpersonal')
+        ->join('socio','socio.id_socio','=','servicio.idsocio')
+        ->select('servicio.id_servicio', 'tiposervicio.nombre', 'personal.nombre_personal', 'socio.nombre_socio')
+        ->whereRaw("servicio.idtiposervicio=tiposervicio.idtiposervicio")
+        
+        // where 
+        ->get();
+
+
         // un metodo parte de este controlador que sirva para pedir los datos de la base de datos del modelo
-        $servicioContenido = Servicio::all();
+        // $servicioContenido = Servicio::all();
+        // $tiposervicioDatos = Tiposervicio::all();
         // vamos a hacer que la vista tenga los datos para que puedan ser mostrados
         // creamos primero un arreglo donde van a estar los datos pasados (hay varias formas)
         $datos = array();
         // vamos a hacerlo un diccionario
-        $datos['lista'] = $servicioContenido;
+        $datos['lista'] = $registros;
+        // $datos['lista']['tiposervicio'] = $tiposervicioDatos;
         // ahora vamos a hacer que ese arreglo, tenga el nombre para que se muestre en la vista
-        $datos['usuario'] = 'Carlos';
-
+        // dd($datos);
         // ahora le decimos que nos devuelva una vista
         return view('Servicio.listado')->with($datos);
     }
@@ -74,5 +90,6 @@ class ServicioController extends Controller {
         return $this->listado();
     }
 
+    
 
 }

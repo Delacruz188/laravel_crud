@@ -10,16 +10,20 @@ use App\Model\Personal;
 class PersonalController extends Controller {
 
     public function listado() {
-        // un metodo parte de este controlador que sirva para pedir los datos de la base de datos del modelo
-        $personal_contenido = Personal::all();
-        // vamos a hacer que la vista tenga los datos para que puedan ser mostrados
-        // creamos primero un arreglo donde van a estar los datos pasados (hay varias formas)
+
+        $personal_contenido = DB::table('personal')
+        // ->join('personal','servicio.idpersonal','=','personal.id_personal')
+        ->join('sucursal','sucursal.idsucursal','=','personal.idsucursal')
+        ->select('personal.id_personal','personal.nombre_personal', 'personal.curp', 'personal.foto', 'sucursal.nombre')
+        ->whereRaw("personal.idsucursal=sucursal.idsucursal")
+        
+        // where 
+        ->get();
+
         $datos = array();
         // vamos a hacerlo un diccionario
         $datos['contenido'] = $personal_contenido;
-        // ahora vamos a hacer que ese arreglo, tenga el nombre para que se muestre en la vista
-        $datos['usuario'] = 'Carlos';
-
+        // dd($datos); 
         // ahora le decimos que nos devuelva una vista
         return view('Personal.listado')->with($datos);
     }
@@ -72,13 +76,28 @@ class PersonalController extends Controller {
                 $personal->nombre_personal=$datos['nombre_personal'];
                 $personal->curp=$datos['curp'];
                 $personal->foto=$nombre_archivo;
+                $personal->idsucursal=$datos['sucursal'];
                 $personal->save();
                 break;
             
             case 'Editar':
+
+                if ($r->hasFile('foto')) {
+                    $archivo = $r->file('foto');
+                    $nombre = 'foto-' . time() . '.' . $archivo->getClientOriginalExtension();
+                    $nombre_archivo = $archivo->storeAs('fotos', $nombre);
+                } else {
+                    $nombre_archivo = '';
+                }
+
                 $personal = Personal::find($datos['id_personal']);
                 $personal->nombre_personal=$datos['nombre_personal'];
                 $personal->curp=$datos['curp'];
+                $personal->idsucursal=$datos['sucursal'];
+                if ($nombre_archivo != '') {
+                    Storage::delete($personal->foto);
+                    $personal->foto = $nombre_archivo;
+                }
                 $personal->save();
                 break;
 
